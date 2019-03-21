@@ -29,6 +29,7 @@ class SignatureCapture extends React.Component {
             this.props.onSaveEvent({
                 pathName: event.nativeEvent.pathName,
                 encoded: event.nativeEvent.encoded,
+                svg: event.nativeEvent.svg,
             });
         }
 
