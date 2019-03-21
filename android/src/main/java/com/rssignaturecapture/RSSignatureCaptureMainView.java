@@ -29,7 +29,10 @@ import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import java.lang.Boolean;
 
-public class RSSignatureCaptureMainView extends LinearLayout implements OnClickListener,RSSignatureCaptureView.SignatureCallback {
+import com.rssignaturecapture.utils.ImageTracerAndroid;
+
+public class RSSignatureCaptureMainView extends LinearLayout
+    implements OnClickListener, RSSignatureCaptureView.SignatureCallback {
   LinearLayout buttonsLayout;
   RSSignatureCaptureView signatureView;
 
@@ -49,7 +52,7 @@ public class RSSignatureCaptureMainView extends LinearLayout implements OnClickL
     mActivity = activity;
 
     this.setOrientation(LinearLayout.VERTICAL);
-    this.signatureView = new RSSignatureCaptureView(context,this);
+    this.signatureView = new RSSignatureCaptureView(context, this);
     // add the buttons and signature views
     this.buttonsLayout = this.buttonsLayout();
     this.addView(this.buttonsLayout);
@@ -91,7 +94,6 @@ public class RSSignatureCaptureMainView extends LinearLayout implements OnClickL
     this.maxSize = size;
   }
 
-
   private LinearLayout buttonsLayout() {
 
     // create the UI programatically
@@ -120,7 +122,8 @@ public class RSSignatureCaptureMainView extends LinearLayout implements OnClickL
   }
 
   // the on click listener of 'save' and 'clear' buttons
-  @Override public void onClick(View v) {
+  @Override
+  public void onClick(View v) {
     String tag = v.getTag().toString().trim();
 
     // save the signature
@@ -169,18 +172,19 @@ public class RSSignatureCaptureMainView extends LinearLayout implements OnClickL
         out.close();
       }
 
-
       ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
       Bitmap resizedBitmap = getResizedBitmap(this.signatureView.getSignature());
       resizedBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
 
-
       byte[] byteArray = byteArrayOutputStream.toByteArray();
       String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+      String svg = ImageTracerAndroid.imageToSVG(resizedBitmap, null, null);
 
       WritableMap event = Arguments.createMap();
       event.putString("pathName", file.getAbsolutePath());
       event.putString("encoded", encoded);
+      event.putString("svg", svg);
       ReactContext reactContext = (ReactContext) getContext();
       reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "topChange", event);
     } catch (Exception e) {
@@ -189,7 +193,7 @@ public class RSSignatureCaptureMainView extends LinearLayout implements OnClickL
   }
 
   public Bitmap getResizedBitmap(Bitmap image) {
-    Log.d("React Signature","maxSize:"+maxSize);
+    Log.d("React Signature", "maxSize:" + maxSize);
     int width = image.getWidth();
     int height = image.getHeight();
 
@@ -205,14 +209,14 @@ public class RSSignatureCaptureMainView extends LinearLayout implements OnClickL
     return Bitmap.createScaledBitmap(image, width, height, true);
   }
 
-
   public void reset() {
     if (this.signatureView != null) {
       this.signatureView.clearSignature();
     }
   }
 
-  @Override public void onDragged() {
+  @Override
+  public void onDragged() {
     WritableMap event = Arguments.createMap();
     event.putBoolean("dragged", true);
     ReactContext reactContext = (ReactContext) getContext();
